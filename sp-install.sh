@@ -11,6 +11,12 @@ REPO="BuoyantIO/save-phippy"
 INSTALL_DIR="$HOME/.save-phippy/bin"
 INSTALL_PATH="$INSTALL_DIR/spadmin"
 
+oops () {
+  echo "The escape room is not available right this moment. 😐" >&2
+  echo "Please try again shortly -- we are getting this sorted. 🙂" >&2
+  exit 1
+}
+
 # ---------------------------------------------------------------------------
 # Detect OS
 # ---------------------------------------------------------------------------
@@ -47,14 +53,25 @@ fi
 # ---------------------------------------------------------------------------
 CURRENT_URL="https://raw.githubusercontent.com/${REPO}/main/.current"
 echo "Fetching current release tag from ${CURRENT_URL} ..."
+ERROR=
 if command -v curl &>/dev/null; then
-  TAG="$(curl -fsSL "$CURRENT_URL")"
+  if ! TAG="$(curl -fsSL "$CURRENT_URL")"; then
+    ERROR="Failed to download .current"
+  fi
 elif command -v wget &>/dev/null; then
-  TAG="$(wget -qO- "$CURRENT_URL")"
+  if ! TAG="$(wget -qO- "$CURRENT_URL")"; then
+    ERROR="Failed to download .current"
+  fi
 else
   echo "curl or wget is required to download files" >&2
   exit 1
 fi
+
+if [ -n "$ERROR" ]; then
+  oops
+  exit 1
+fi
+
 TAG="$(echo "$TAG" | tr -d '\n')"  # strip trailing newline
 if [ -z "$TAG" ]; then
   echo "Could not determine current release tag" >&2
@@ -72,10 +89,20 @@ TMP_DIR="$(mktemp -d)"
 trap 'rm -rf "$TMP_DIR"' EXIT
 
 echo "Downloading ${DOWNLOAD_URL} ..."
+ERROR=
 if command -v curl &>/dev/null; then
-  curl -fsSL "$DOWNLOAD_URL" -o "$TMP_DIR/$ARCHIVE"
+  if ! curl -fsSL "$DOWNLOAD_URL" -o "$TMP_DIR/$ARCHIVE"; then
+    ERROR="Failed to download ${DOWNLOAD_URL}"
+  fi
 else
-  wget -qO "$TMP_DIR/$ARCHIVE" "$DOWNLOAD_URL"
+  if ! wget -qO "$TMP_DIR/$ARCHIVE" "$DOWNLOAD_URL"; then
+    ERROR="Failed to download ${DOWNLOAD_URL}"
+  fi
+fi
+
+if [ -n "$ERROR" ]; then
+  oops
+  exit 1
 fi
 
 tar -xzf "$TMP_DIR/$ARCHIVE" -C "$TMP_DIR" admin
