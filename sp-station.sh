@@ -12,7 +12,7 @@
 
 TAG=${TAG:-0.5.0}
 CERTDIR=${CERTDIR:-$(pwd)/certs}
-CHART=${CHART:-oci://ghcr.io/buoyantio/save-phippy-station-chart}
+CHART=${CHART:-oci://ghcr.io/buoyantio/save-phippy-station}
 
 set -euo pipefail
 
