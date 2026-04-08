@@ -13,10 +13,12 @@
 #   TAG        – image tag to deploy (no leading 'v')
 #   CERTDIR    – path to the certs/ directory   (default: ./certs)
 #   CHART      - chart to deploy
+#   TEAM_NAME  - team name for station (defaults to $USER or team)
 
 TAG=${TAG:-0.5.0}
 CERTDIR=${CERTDIR:-$(pwd)/certs}
 CHART=${CHART:-oci://ghcr.io/buoyantio/save-phippy-station}
+TEAM_NAME=${TEAM_NAME:-${USER:-team}}
 
 if ! command -v spadmin > /dev/null 2>&1; then
     echo "spadmin not found, please make sure your \$PATH is set correctly." >&2
