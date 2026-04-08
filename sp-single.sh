@@ -16,7 +16,7 @@
 
 TAG=${TAG:-0.5.0}
 CERTDIR=${CERTDIR:-$(pwd)/certs}
-CHART=oci://ghcr.io/buoyantio/save-phippy-station-chart
+CHART=${CHART:-oci://ghcr.io/buoyantio/save-phippy-station-chart}
 
 if ! command -v spadmin > /dev/null 2>&1; then
     echo "spadmin not found, please make sure your \$PATH is set correctly." >&2
