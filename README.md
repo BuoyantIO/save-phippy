@@ -1,4 +1,24 @@
-# Canal Caper: the KubeCon EU 2026 Escape Room
+# Escape Room: Kubenapping in Amsterdam
+## Phippy's Abduction on the Canals
+
+_Are you ready to use your Kubernetes skills to solve the crime of the
+cloud native century?_
+
+_A dark deployment has settled over the canals of Amsterdam. Phippy has
+vanished! A mysterious note, signed only by an “Unknown Controller,” has
+been found near her last sighting—a cryptic warning tied to a corrupted
+cluster. Play the ultimate cloud native escape room, a high-stakes
+service mesh “abduction mystery” where Linky the Lobster, Linkerd’s
+trusty mascot, is on the case._
+
+_This virtual escape room challenges participants, Linky’s investigative
+team, to use their Kubernetes and Linkerd skills to follow the traces,
+find the logs, and solve the technical clues to find Phippy before her
+liveness probe fails permanently. During the investigation, Phippy’s
+friends will provide cryptic clues and debugging tips about her
+whereabouts. Ready to dive in and help?_
+
+## About the Escape Room
 
 For KubeCon EU 2026 in Amsterdam, we decided to do something a little bit
 different. Rather than sponsoring, we thought we'd throw a party -- a
