@@ -175,6 +175,8 @@ This is easy: whoever wants to play, run
 spadmin team register $teamName
 ```
 
+(To unregister a team, use `spadmin team delete $teamName`.)
+
 ### 5. Provisioning
 
 When you're ready to get started - or at any point later - run
@@ -187,6 +189,10 @@ to assign teams to clusters and let them start playing. If you give a
 team name, only that one team will be provisioned; if you leave the name
 off, all teams will be assigned to clusters (assuming that you have
 enough available clusters!).
+
+(To deprovision a cluster, make sure that any team using the cluster has
+been deleted, then you can `spadmin cluster delete $clusterName` or
+`spadmin cluster reset $clusterName`.)
 
 ### 6. Starting the Game
 
