@@ -82,7 +82,8 @@ echo "Installing save-phippy admin ${TAG} (${GOOS}/${GOARCH}) ..."
 # ---------------------------------------------------------------------------
 # Download and extract the binary
 # ---------------------------------------------------------------------------
-ARCHIVE="admin_${TAG}_${GOOS}_${GOARCH}.tar.gz"
+TAG_NO_V="${TAG#v}"  # strip leading 'v' if present
+ARCHIVE="admin_${TAG_NO_V}_${GOOS}_${GOARCH}.tar.gz"
 DOWNLOAD_URL="https://github.com/${REPO}/releases/download/${TAG}/${ARCHIVE}"
 
 TMP_DIR="$(mktemp -d)"
