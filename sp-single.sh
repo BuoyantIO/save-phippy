@@ -8,12 +8,15 @@
 #   2. Install the cluster stack: gateway-api CRDs, Linkerd, Emissary
 #   3. Deploy the station Helm chart (no external panopticon)
 #   4. Sign and install the station TLS certificate using the Emissary IP
+#
+# Environment variables (all optional; override computed defaults):
+#   TAG        – image tag to deploy (no leading 'v')
+#   CERTDIR    – path to the certs/ directory   (default: ./certs)
+#   CHART      - chart to deploy
 
-ROOTDIR=$(cd "$(dirname "$0")" && pwd)
-CHARTDIR=${CHARTDIR:-$ROOTDIR/charts}
-CERTDIR=${CERTDIR:-$ROOTDIR/certs}
-
-TAG=${TAG:-v0.5.0}
+TAG=${TAG:-0.5.0}
+CERTDIR=${CERTDIR:-$(pwd)/certs}
+CHART=oci://ghcr.io/buoyantio/save-phippy-station-chart
 
 if ! command -v spadmin > /dev/null 2>&1; then
     echo "spadmin not found, please make sure your \$PATH is set correctly." >&2
@@ -40,7 +43,7 @@ echo "==> Bootstrapping admin TLS certificates in $CERTDIR ..."
 spadmin cert bootstrap --cert-dir "$CERTDIR" localhost
 
 echo "==> Generating CSR and signing certificate for admin user \"$ADMIN_USER\" ..."
-spadmin cert csr --cert-dir "$CERTDIR" --out-dir "$CERTDIR" "$ADMIN_USER"
+spadmin cert csr --out-dir "$CERTDIR" "$ADMIN_USER"
 spadmin cert sign \
     --cert-dir "$CERTDIR" \
     --out "$CERTDIR/$ADMIN_USER.crt" \
@@ -82,9 +85,11 @@ trap "rm -f $clientCA" EXIT
 # Combine root CA and users intermediate CA so that admin user certs are trusted.
 cat "$CERTDIR/ca.crt" "$CERTDIR/users.crt" > "$clientCA"
 
-helm upgrade -i station -n station "$CHARTDIR/station" \
+helm upgrade -i station -n station \
+    $CHART --version $TAG \
     --set "defaultImageTag=$TAG" \
     --set "clusterName=$cluster_name" \
+    --set "teamName=$TEAM_NAME" \
     --set-file adminClientCA.crt="$clientCA"
 
 kubectl rollout status -n emissary deploy
