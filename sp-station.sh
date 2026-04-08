@@ -156,21 +156,37 @@ kubectl rollout status -n station deploy
 # Fix k3d API server IP and register the cluster with admin
 # ---------------------------------------------------------------------------
 KUBECONFIG=${KUBECONFIG:-$HOME/.kube/config}
-CTX=$(kubectl config current-context)
-KUBE_CLUSTER_NAME=$(kubectl config view --minify -o jsonpath='{.clusters[0].name}')
-CLUSTER_IP=$(kubectl config view --minify -o jsonpath='{.clusters[0].cluster.server}' \
-               | sed 's|https://||' | cut -d: -f1)
+export CTX=$(kubectl config current-context)
 
-if [ "$CLUSTER_IP" = "0.0.0.0" ]; then
-  if ! echo "$KUBE_CLUSTER_NAME" | grep -q "^k3d-"; then
-    echo "Forwarded API server detected, but not k3d?" >&2
+export CLUSTER_NAME=$(yq eval '.contexts[] | select(.name == env(CTX)) | .context.cluster' $KUBECONFIG)
+
+if [ -z "$CLUSTER_NAME" ]; then
+    echo "Failed to extract cluster name from kubeconfig"
     exit 1
-  fi
-  REAL_IP=$(docker inspect "${KUBE_CLUSTER_NAME}-server-0" \
-              | jq -r '.[0].NetworkSettings.Networks.canalcaper.IPAddress')
-  APISERVER_URL="https://${REAL_IP}:6443"
-  echo "Forcing forwarded API server to $APISERVER_URL"
-  kubectl config set "clusters.${KUBE_CLUSTER_NAME}.server" "$APISERVER_URL"
 fi
 
-admin cluster add
+CLUSTER_IP=$(yq eval '.clusters[] | select(.name == env(CLUSTER_NAME)) | .cluster.server' $KUBECONFIG \
+               | cut -d: -f2 | tr -d /)
+
+if [ -z "$CLUSTER_IP" ]; then
+    echo "Failed to extract cluster IP from kubeconfig"
+    exit 1
+fi
+
+echo "Current cluster:       $CLUSTER_NAME"
+echo "Current API server IP: $CLUSTER_IP"
+
+if [ "$CLUSTER_IP" == "0.0.0.0" ]; then
+     if [ $(echo "$CLUSTER_NAME" | grep -c "^k3d-") -eq 0 ]; then
+          echo "Forwarded API server detected, but not k3d?" >&2
+          exit 1
+     fi
+
+     CLUSTER_IP=$(docker inspect ${CLUSTER_NAME}-server-0 \
+                      | jq -r '.[0].NetworkSettings.Networks[].IPAddress')
+     APISERVER_URL="https://${CLUSTER_IP}:6443"
+     echo "Forcing forwarded API server to $APISERVER_URL"
+     kubectl config set clusters.${CLUSTER_NAME}.server $APISERVER_URL
+fi
+
+spadmin cluster add
