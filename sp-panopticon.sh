@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# sp-panopticon.sh – set up a cluster and deploy the panopticon (caperd) onto
+# sp-panopticon.sh – set up a cluster and deploy the panopticon onto
 # it in one step.
 #
 # Usage: sp-panopticon.sh [--dev] [--k3d <cluster-name>] [--civo <cluster-name>]
@@ -12,7 +12,7 @@
 
 TAG=${TAG:-0.5.0}
 CERTDIR=${CERTDIR:-$(pwd)/certs}
-CHART=${CHART:-oci://ghcr.io/buoyantio/save-phippy-panopticon-chart}
+CHART=${CHART:-oci://ghcr.io/buoyantio/save-phippy-panopticon}
 
 set -euo pipefail
 
@@ -115,13 +115,18 @@ IP=$(kubectl get svc -n emissary emissary \
 spadmin cert bootstrap --cert-dir "$CERTDIR" "$IP"
 
 # ---------------------------------------------------------------------------
-# Step 3: panopticon (caperd) setup
+# Step 3: panopticon setup
 # ---------------------------------------------------------------------------
-kubectl create ns caperd || true
-kubectl annotate ns caperd linkerd.io/inject=enabled
+kubectl create ns panopticon || true
+kubectl annotate ns panopticon linkerd.io/inject=enabled
+
+clientCA=$(mktemp)
+trap "rm -f $clientCA" EXIT
+
+cat "$TEAMS_CERT" "$USERS_CERT" > "$clientCA"
 
 helm_args=(
-  upgrade -i caperd -n caperd \
+  upgrade -i panopticon -n panopticon \
   $CHART --version $TAG \
   --set defaultImageTag="$TAG"
   --set-file panopticon.crt="$PANOPTICON_CERT"
@@ -129,7 +134,7 @@ helm_args=(
   --set-file teams.crt="$TEAMS_CERT"
   --set-file teams.key="$TEAMS_KEY"
   --set-file ca.crt="$CA_CERT"
-  --set-file clientCA.crt=<(cat "$TEAMS_CERT" "$USERS_CERT")
+  --set-file clientCA.crt=$clientCA
 )
 if [ "$dev_mode" = true ]; then
   helm_args+=( --set image.pullPolicy=Never )
@@ -137,4 +142,4 @@ fi
 helm "${helm_args[@]}"
 
 kubectl rollout status -n emissary deploy
-kubectl rollout status -n caperd deploy
+kubectl rollout status -n panopticon deploy
