@@ -116,23 +116,17 @@ Start, as always, by your KUBECONFIG point to an _empty_ cluster, then:
 bash $HOME/.save-phippy/bin/sp-panopticon
 ```
 
-This will install Emissary, Linkerd, Linkerd Viz, and the panopticon
-code. Once it's done (which might take a bit!), you'll grab the
-panopticon's IP address:
+This will install Emissary, Linkerd, and Linkerd Viz, and the panopticon
+code. It'll also create a `certs` directory in your current directory
+with the certs you'll need.
+
+Once it's done (which might take a bit!), you'll grab the panopticon's IP
+address for use when you add station clusters:
 
 ```bash
 IP=$(kubectl get svc -n emissary emissary \
              -o jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null)
 ```
-
-and then run `spadmin cert bootstrap`:
-
-```bash
-spadmin cert bootstrap $IP
-```
-
-This will create a `certs` directory in the current directory that
-contains all the certs needed for the game.
 
 #### A Note on Certificates
 
@@ -178,7 +172,7 @@ panopticon.
 This is easy: whoever wants to play, run
 
 ```bash
-spadmin register $teamName
+spadmin team register $teamName
 ```
 
 ### 5. Provisioning
