@@ -8,8 +8,12 @@ would stand out. A forgettable party wouldn't help anyone.
 
 We decided to host an escape room party.
 
-Putting it all together was a lot of fun, and a _lot_ of work, and now
-we're making it possible to run the escape room on your own!
+Putting it all together was a lot of fun - and a _lot_ of work - and now
+we're making it possible to run the escape room on your own! We hope you
+enjoy it (and we hope you learn something in the process!), and we very
+much look forward to hearing how everything goes for you -- just drop us
+a line at marketing@buoyant.io, or find Flynn on the Linkerd or CNCF
+Slacks!
 
 ## Getting Started
 
@@ -21,9 +25,9 @@ curl -O https://raw.githubusercontent.com/BuoyantIO/save-phippy/main/sp-install.
 bash sp-install.sh
 ```
 
-`spinstall.sh` will download the correct `spadmin` binary for your system
-(MacOS or Linux) and install it into `$HOME/.save-phippy/bin`. You'll
-need to add that directory to your `$PATH`.
+`sp-install.sh` will download the correct `spadmin` binary for your
+system (MacOS or Linux) and install it into `$HOME/.save-phippy/bin`.
+You'll need to add that directory to your `$PATH`.
 
 ## Running Just For Yourself
 
