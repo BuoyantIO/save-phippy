@@ -1,0 +1,5 @@
+Save Phippy Panopticon has been deployed.
+
+Release name: {{ .Release.Name }}
+Namespace:    {{ .Release.Namespace }}
+Image tag:    {{ .Values.defaultImageTag }}

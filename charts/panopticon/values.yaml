@@ -1,0 +1,23 @@
+# Default image tag for all components
+defaultImageTag: "0.5.0"
+
+# TLS certificate and key for the panopticon service
+panopticon:
+  crt: ""
+  key: ""
+
+# TLS certificate and key for the teams intermediate CA
+teams:
+  crt: ""
+  key: ""
+
+# CA certificate
+ca:
+  crt: ""
+
+# Client CA certificate (used to verify admin and user TLS client certificates)
+clientCA:
+  crt: ""
+
+image:
+  pullPolicy: IfNotPresent

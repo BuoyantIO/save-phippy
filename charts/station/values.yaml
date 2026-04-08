@@ -1,0 +1,15 @@
+# Default image tag for all components
+defaultImageTag: "0.5.0"
+
+# Name of the station cluster (used to register with the panopticon)
+clusterName: ""
+
+# Team name (used in single-cluster / singleplayer mode)
+teamName: ""
+
+# Admin client CA certificate (used to verify admin TLS client certificates)
+adminClientCA:
+  crt: ""
+
+image:
+  pullPolicy: IfNotPresent

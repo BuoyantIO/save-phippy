@@ -1,0 +1,6 @@
+Save Phippy Station has been deployed.
+
+Release name:  {{ .Release.Name }}
+Namespace:     {{ .Release.Namespace }}
+Cluster name:  {{ .Values.clusterName }}
+Image tag:     {{ .Values.defaultImageTag }}
