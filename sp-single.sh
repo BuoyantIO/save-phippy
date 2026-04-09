@@ -18,7 +18,8 @@
 TAG=${TAG:-0.5.0}
 CERTDIR=${CERTDIR:-$(pwd)/certs}
 CHART=${CHART:-oci://ghcr.io/buoyantio/save-phippy-station}
-TEAM_NAME=${TEAM_NAME:-${USER:-team}}
+_USER=$(printf '%s' "${USER}" | tr '[:upper:]' '[:lower:]' | tr -c 'a-z0-9-' '-')
+TEAM_NAME=${TEAM_NAME:-${_USER:-team}}
 
 if ! command -v spadmin > /dev/null 2>&1; then
     echo "spadmin not found, please make sure your \$PATH is set correctly." >&2
@@ -39,7 +40,7 @@ set -e
 # ---------------------------------------------------------------------------
 # Use "localhost" as a placeholder SAN for the panopticon certificate; the
 # panopticon service is not deployed in single-cluster mode.
-ADMIN_USER=${ADMIN_ID:-${USER:-admin}}
+ADMIN_USER=${ADMIN_ID:-${_USER:-admin}}
 
 echo "==> Bootstrapping admin TLS certificates in $CERTDIR ..."
 spadmin cert bootstrap --cert-dir "$CERTDIR" localhost
