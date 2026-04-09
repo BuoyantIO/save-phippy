@@ -20,10 +20,12 @@ CERTDIR=${CERTDIR:-$(pwd)/certs}
 CHART=${CHART:-oci://ghcr.io/buoyantio/save-phippy-station}
 TEAM_NAME=${TEAM_NAME:-${USER:-team}}
 
-if ! command -v spadmin > /dev/null 2>&1; then
-    echo "spadmin not found, please make sure your \$PATH is set correctly." >&2
-    exit 1
-fi
+for cmd in spadmin kubectl linkerd helm; do
+    if ! command -v "$cmd" > /dev/null 2>&1; then
+        echo "$cmd not found. Please install it and make sure it is on your \$PATH." >&2
+        exit 1
+    fi
+done
 
 if ! kubectl get ns > /dev/null 2>&1; then
     echo "kubectl is not configured correctly. Please check your KUBECONFIG." >&2
