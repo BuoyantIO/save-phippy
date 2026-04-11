@@ -70,6 +70,13 @@ if [ "$dev_mode" = true ] && [ "$provider" = "--civo" ]; then
   exit 1
 fi
 
+for cmd in spadmin kubectl linkerd helm yq; do
+  if ! command -v "$cmd" > /dev/null 2>&1; then
+    echo "$cmd not found. Please install it and make sure it is on your \$PATH." >&2
+    exit 1
+  fi
+done
+
 if [ -z "${TAG:-}" ]; then
   echo "TAG environment variable is not set. Please set it to the desired image tag." >&2
   exit 1

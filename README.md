@@ -35,6 +35,14 @@ much look forward to hearing how everything goes for you -- just drop us
 a line at marketing@buoyant.io, or find Flynn on the Linkerd or CNCF
 Slacks!
 
+## Prerequisites
+
+Beyond standard Kubernetes tooling (`kubectl`, `helm`), the bootstrap
+scripts require the
+[Linkerd CLI](https://linkerd.io/2/getting-started/#step-1-install-the-cli).
+The multiplayer setup (`sp-station.sh`) additionally requires
+[yq](https://github.com/mikefarah/yq).
+
 ## Getting Started
 
 There are two ways to run the escape room, but they both start by
