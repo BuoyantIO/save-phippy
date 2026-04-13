@@ -130,8 +130,8 @@ bash sp-multi.sh
 
 This will install two extra scripts in `$HOME/.save-phippy/bin`:
 
-- `sp-panopticon` is a shell script that sets up a cluster to be the panopticon
-- `sp-station` is a shell script that sets up a cluster to be a station cluster
+- `sp-panopticon.sh` is a shell script that sets up a cluster to be the panopticon
+- `sp-station.sh` is a shell script that sets up a cluster to be a station cluster
 
 ### 2. Initializing the Panopticon
 
@@ -141,7 +141,7 @@ address of its Emissary to do everything else.
 Start, as always, by your KUBECONFIG point to an _empty_ cluster, then:
 
 ```bash
-bash $HOME/.save-phippy/bin/sp-panopticon
+bash $HOME/.save-phippy/bin/sp-panopticon.sh
 ```
 
 This will install Emissary, Linkerd, and Linkerd Viz, and the panopticon
