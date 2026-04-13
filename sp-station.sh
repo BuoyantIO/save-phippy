@@ -10,7 +10,7 @@
 #   CERTDIR    – path to the certs/ directory   (default: ./certs)
 #   CHART      - chart to deploy
 
-TAG=${TAG:-0.5.0}
+TAG=${TAG:-0.6.0}
 CERTDIR=${CERTDIR:-$(pwd)/certs}
 CHART=${CHART:-oci://ghcr.io/buoyantio/save-phippy-station}
 
