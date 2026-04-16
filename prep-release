@@ -64,7 +64,7 @@ done
 git add .current sp-*.sh
 
 if [ "$updated_count" -eq 0 ]; then
-  echo "No sp-* scripts contained a TAG default to update." >&2
+  echo "No sp-* scripts with TAG defaults were found (expected lines like TAG=\${TAG:-X.Y.Z})." >&2
   exit 1
 fi
 
@@ -79,8 +79,14 @@ git push -u origin "$branch"
 pr_title="Prepare release ${tag}"
 pr_body="Update .current and script default TAG values for ${tag}."
 
+existing_pr_count="$(gh pr list --base main --head "$branch" --json number --jq 'length')"
+if [ "$existing_pr_count" -gt 0 ]; then
+  echo "A pull request for ${branch} already exists."
+  exit 0
+fi
+
 if ! gh pr create --title "$pr_title" --body "$pr_body" --base main --head "$branch"; then
-  echo "Failed to create PR automatically. If one already exists, this is expected." >&2
+  echo "Failed to create PR automatically." >&2
   exit 1
 fi
 
