@@ -1,0 +1,93 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+usage() {
+  echo "Usage: $(basename "$0") <version>" >&2
+  echo "Example: $(basename "$0") 0.6.1" >&2
+  exit 1
+}
+
+if [ $# -ne 1 ]; then
+  usage
+fi
+
+for cmd in gh git; do
+  if ! command -v "$cmd" >/dev/null 2>&1; then
+    echo "$cmd is required." >&2
+    exit 1
+  fi
+done
+
+input="$1"
+version="${input#v}"
+
+if ! [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+  echo "Version must be in the form X.Y.Z (or vX.Y.Z)." >&2
+  exit 1
+fi
+
+tag="v${version}"
+branch="release/${tag}"
+# Match lines like: TAG=${TAG:-0.6.0}
+tag_default_re='^TAG=\$\{TAG:-[^}]+\}$'
+
+if ! git diff --quiet || ! git diff --cached --quiet; then
+  echo "Working tree must be clean before running prep-release." >&2
+  exit 1
+fi
+
+git checkout -B "$branch"
+
+printf '%s\n' "$tag" > .current
+
+updated_count=0
+
+for script in sp-*.sh; do
+  [ -f "$script" ] || continue
+  if ! grep -Eq "$tag_default_re" "$script"; then
+    echo "Skipping $script: no TAG default found."
+    continue
+  fi
+  tmp="$(mktemp)"
+  awk -v v="$version" '
+    /^TAG=\$\{TAG:-[^}]+\}$/ {
+      print "TAG=${TAG:-" v "}"
+      next
+    }
+    { print }
+  ' "$script" > "$tmp"
+  mv "$tmp" "$script"
+  updated_count=$((updated_count + 1))
+done
+
+git add .current sp-*.sh
+
+if [ "$updated_count" -eq 0 ]; then
+  echo "No sp-* scripts with TAG defaults were found (expected lines like TAG=\${TAG:-X.Y.Z})." >&2
+  exit 1
+fi
+
+if git diff --cached --quiet; then
+  echo "No release version changes were made." >&2
+  exit 1
+fi
+
+git commit -m "Prepare release ${tag}"
+git push -u origin "$branch"
+
+pr_title="Prepare release ${tag}"
+pr_body="Update .current and script default TAG values for ${tag}."
+
+existing_pr_count="$(gh pr list --base main --head "$branch" --json number --jq 'length')"
+if [ "$existing_pr_count" -gt 0 ]; then
+  echo "A pull request for ${branch} already exists."
+  exit 0
+fi
+
+if ! gh pr create --title "$pr_title" --body "$pr_body" --base main --head "$branch"; then
+  echo "Failed to create PR automatically." >&2
+  exit 1
+fi
+
+echo "Prepared release ${tag} and opened a pull request."
