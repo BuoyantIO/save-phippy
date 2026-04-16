@@ -1,0 +1,81 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+usage() {
+  echo "Usage: $(basename "$0") <version>" >&2
+  echo "Example: $(basename "$0") 0.6.1" >&2
+  exit 1
+}
+
+if [ $# -ne 1 ]; then
+  usage
+fi
+
+for cmd in gh git; do
+  if ! command -v "$cmd" >/dev/null 2>&1; then
+    echo "$cmd is required." >&2
+    exit 1
+  fi
+done
+
+input="$1"
+version="${input#v}"
+
+if ! [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+  echo "Version must be in the form X.Y.Z (or vX.Y.Z)." >&2
+  exit 1
+fi
+
+tag="v${version}"
+
+if ! git diff --quiet || ! git diff --cached --quiet; then
+  echo "Working tree must be clean before running ship-release." >&2
+  exit 1
+fi
+
+git fetch origin main:refs/remotes/origin/main
+main_commit="$(git rev-parse refs/remotes/origin/main)"
+
+if git rev-parse -q --verify "refs/tags/${tag}" >/dev/null; then
+  echo "Tag ${tag} already exists locally."
+else
+  git tag -a "$tag" "$main_commit" -m "Release ${tag}"
+fi
+
+git push origin "refs/tags/${tag}"
+
+tmpdir="$(mktemp -d)"
+trap 'rm -rf "$tmpdir"' EXIT
+
+artifacts=(
+  "admin_${version}_darwin_all.tar.gz"
+  "admin_${version}_linux_amd64.tar.gz"
+  "admin_${version}_linux_arm64.tar.gz"
+)
+
+for artifact in "${artifacts[@]}"; do
+  gh release download "$tag" \
+    --repo BuoyantIO/save-phippy-internal \
+    --pattern "$artifact" \
+    --dir "$tmpdir"
+done
+
+git show "${tag}:sp-panopticon.sh" > "${tmpdir}/sp-panopticon.sh"
+git show "${tag}:sp-station.sh" > "${tmpdir}/sp-station.sh"
+
+assets=(
+  "${tmpdir}/admin_${version}_darwin_all.tar.gz"
+  "${tmpdir}/admin_${version}_linux_amd64.tar.gz"
+  "${tmpdir}/admin_${version}_linux_arm64.tar.gz"
+  "${tmpdir}/sp-panopticon.sh"
+  "${tmpdir}/sp-station.sh"
+)
+
+if gh release view "$tag" >/dev/null 2>&1; then
+  gh release upload "$tag" "${assets[@]}" --clobber
+else
+  gh release create "$tag" "${assets[@]}" --title "$tag" --generate-notes
+fi
+
+echo "Shipped release ${tag}."

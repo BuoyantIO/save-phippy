@@ -1,0 +1,83 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+usage() {
+  echo "Usage: $(basename "$0") <version>" >&2
+  echo "Example: $(basename "$0") 0.6.1" >&2
+  exit 1
+}
+
+if [ $# -ne 1 ]; then
+  usage
+fi
+
+if ! command -v gh >/dev/null 2>&1; then
+  echo "gh CLI is required." >&2
+  exit 1
+fi
+
+if ! command -v git >/dev/null 2>&1; then
+  echo "git is required." >&2
+  exit 1
+fi
+
+input="$1"
+version="${input#v}"
+
+if ! [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+  echo "Version must be in the form X.Y.Z (or vX.Y.Z)." >&2
+  exit 1
+fi
+
+tag="v${version}"
+branch="release/${tag}"
+
+if ! git diff --quiet || ! git diff --cached --quiet; then
+  echo "Working tree must be clean before running prep-release." >&2
+  exit 1
+fi
+
+git checkout -B "$branch"
+
+printf '%s\n' "$tag" > .current
+
+for script in sp-*.sh; do
+  [ -f "$script" ] || continue
+  tmp="$(mktemp)"
+  awk -v v="$version" '
+    BEGIN { updated = 0 }
+    /^TAG=\$\{TAG:-[^}]+\}$/ {
+      print "TAG=${TAG:-" v "}"
+      updated = 1
+      next
+    }
+    { print }
+    END {
+      if (updated == 0) {
+        exit 0
+      }
+    }
+  ' "$script" > "$tmp"
+  mv "$tmp" "$script"
+done
+
+git add .current sp-*.sh
+
+if git diff --cached --quiet; then
+  echo "No release version changes were made." >&2
+  exit 1
+fi
+
+git commit -m "Prepare release ${tag}"
+git push -u origin "$branch"
+
+pr_title="Prepare release ${tag}"
+pr_body="Update .current and script default TAG values for ${tag}."
+
+if ! gh pr create --title "$pr_title" --body "$pr_body" --base main --head "$branch"; then
+  echo "Failed to create PR automatically. If one already exists, this is expected." >&2
+  exit 1
+fi
+
+echo "Prepared release ${tag} and opened a pull request."
