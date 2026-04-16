@@ -30,6 +30,11 @@ fi
 tag="v${version}"
 internal_repo="${INTERNAL_REPO:-BuoyantIO/save-phippy-internal}"
 
+if ! [[ "$internal_repo" =~ ^[^/]+/[^/]+$ ]]; then
+  echo "INTERNAL_REPO must be in OWNER/REPO format." >&2
+  exit 1
+fi
+
 if ! git diff --quiet || ! git diff --cached --quiet; then
   echo "Working tree must be clean before running ship-release." >&2
   exit 1
@@ -68,7 +73,10 @@ for artifact in "${artifacts[@]}"; do
 done
 
 for script in "${release_scripts[@]}"; do
-  git show "${tag}:${script}" > "${tmpdir}/${script}"
+  if ! git show "${tag}:${script}" > "${tmpdir}/${script}"; then
+    echo "Failed to read ${script} from tag ${tag}." >&2
+    exit 1
+  fi
 done
 
 assets=(

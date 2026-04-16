@@ -51,12 +51,12 @@ for script in sp-*.sh; do
   fi
   tmp="$(mktemp)"
   awk -v v="$version" '
-    $0 ~ re {
+    /^TAG=\$\{TAG:-[^}]+\}$/ {
       print "TAG=${TAG:-" v "}"
       next
     }
     { print }
-  ' re="$tag_default_re" "$script" > "$tmp"
+  ' "$script" > "$tmp"
   mv "$tmp" "$script"
   updated_count=$((updated_count + 1))
 done
