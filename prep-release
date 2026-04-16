@@ -42,27 +42,32 @@ git checkout -B "$branch"
 
 printf '%s\n' "$tag" > .current
 
+updated_count=0
+
 for script in sp-*.sh; do
   [ -f "$script" ] || continue
+  if ! grep -Eq '^TAG=\$\{TAG:-[^}]+\}$' "$script"; then
+    echo "Skipping $script: no TAG default found."
+    continue
+  fi
   tmp="$(mktemp)"
   awk -v v="$version" '
-    BEGIN { updated = 0 }
     /^TAG=\$\{TAG:-[^}]+\}$/ {
       print "TAG=${TAG:-" v "}"
-      updated = 1
       next
     }
     { print }
-    END {
-      if (updated == 0) {
-        exit 0
-      }
-    }
   ' "$script" > "$tmp"
   mv "$tmp" "$script"
+  updated_count=$((updated_count + 1))
 done
 
 git add .current sp-*.sh
+
+if [ "$updated_count" -eq 0 ]; then
+  echo "No sp-* scripts contained a TAG default to update." >&2
+  exit 1
+fi
 
 if git diff --cached --quiet; then
   echo "No release version changes were made." >&2

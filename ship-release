@@ -54,6 +54,11 @@ artifacts=(
   "admin_${version}_linux_arm64.tar.gz"
 )
 
+release_scripts=(
+  "sp-panopticon.sh"
+  "sp-station.sh"
+)
+
 for artifact in "${artifacts[@]}"; do
   gh release download "$tag" \
     --repo BuoyantIO/save-phippy-internal \
@@ -61,16 +66,19 @@ for artifact in "${artifacts[@]}"; do
     --dir "$tmpdir"
 done
 
-git show "${tag}:sp-panopticon.sh" > "${tmpdir}/sp-panopticon.sh"
-git show "${tag}:sp-station.sh" > "${tmpdir}/sp-station.sh"
+for script in "${release_scripts[@]}"; do
+  git show "${tag}:${script}" > "${tmpdir}/${script}"
+done
 
 assets=(
   "${tmpdir}/admin_${version}_darwin_all.tar.gz"
   "${tmpdir}/admin_${version}_linux_amd64.tar.gz"
   "${tmpdir}/admin_${version}_linux_arm64.tar.gz"
-  "${tmpdir}/sp-panopticon.sh"
-  "${tmpdir}/sp-station.sh"
 )
+
+for script in "${release_scripts[@]}"; do
+  assets+=("${tmpdir}/${script}")
+done
 
 if gh release view "$tag" >/dev/null 2>&1; then
   gh release upload "$tag" "${assets[@]}" --clobber
