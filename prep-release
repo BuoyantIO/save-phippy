@@ -73,10 +73,10 @@ if git diff --cached --quiet; then
   exit 1
 fi
 
-git commit -m "Prepare release ${tag}"
+git commit -m "chore: Update for ${tag}"
 git push -u origin "$branch"
 
-pr_title="Prepare release ${tag}"
+pr_title="Update for ${tag}"
 pr_body="Update .current and script default TAG values for ${tag}."
 
 existing_pr_count="$(gh pr list --base main --head "$branch" --json number --jq 'length')"
