@@ -12,15 +12,12 @@ if [ $# -ne 1 ]; then
   usage
 fi
 
-if ! command -v gh >/dev/null 2>&1; then
-  echo "gh CLI is required." >&2
-  exit 1
-fi
-
-if ! command -v git >/dev/null 2>&1; then
-  echo "git is required." >&2
-  exit 1
-fi
+for cmd in gh git; do
+  if ! command -v "$cmd" >/dev/null 2>&1; then
+    echo "$cmd is required." >&2
+    exit 1
+  fi
+done
 
 input="$1"
 version="${input#v}"
