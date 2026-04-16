@@ -28,6 +28,7 @@ if ! [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
 fi
 
 tag="v${version}"
+internal_repo="${INTERNAL_REPO:-BuoyantIO/save-phippy-internal}"
 
 if ! git diff --quiet || ! git diff --cached --quiet; then
   echo "Working tree must be clean before running ship-release." >&2
@@ -61,7 +62,7 @@ release_scripts=(
 
 for artifact in "${artifacts[@]}"; do
   gh release download "$tag" \
-    --repo BuoyantIO/save-phippy-internal \
+    --repo "$internal_repo" \
     --pattern "$artifact" \
     --dir "$tmpdir"
 done

@@ -29,6 +29,8 @@ fi
 
 tag="v${version}"
 branch="release/${tag}"
+# Match lines like: TAG=${TAG:-0.6.0}
+tag_default_re='^TAG=\$\{TAG:-[^}]+\}$'
 
 if ! git diff --quiet || ! git diff --cached --quiet; then
   echo "Working tree must be clean before running prep-release." >&2
@@ -43,18 +45,18 @@ updated_count=0
 
 for script in sp-*.sh; do
   [ -f "$script" ] || continue
-  if ! grep -Eq '^TAG=\$\{TAG:-[^}]+\}$' "$script"; then
+  if ! grep -Eq "$tag_default_re" "$script"; then
     echo "Skipping $script: no TAG default found."
     continue
   fi
   tmp="$(mktemp)"
   awk -v v="$version" '
-    /^TAG=\$\{TAG:-[^}]+\}$/ {
+    $0 ~ re {
       print "TAG=${TAG:-" v "}"
       next
     }
     { print }
-  ' "$script" > "$tmp"
+  ' re="$tag_default_re" "$script" > "$tmp"
   mv "$tmp" "$script"
   updated_count=$((updated_count + 1))
 done
