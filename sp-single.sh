@@ -15,7 +15,7 @@
 #   CHART      - chart to deploy
 #   TEAM_NAME  - team name for station (defaults to $USER or team)
 
-TAG=${TAG:-0.8.0}
+TAG=${TAG:-0.9.0}
 CERTDIR=${CERTDIR:-$(pwd)/certs}
 CHART=${CHART:-oci://ghcr.io/buoyantio/save-phippy-station}
 _USER=$(printf '%s' "${USER}" | tr '[:upper:]' '[:lower:]' | tr -c 'a-z0-9-' '-')
