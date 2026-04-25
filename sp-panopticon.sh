@@ -10,7 +10,7 @@
 #   CERTDIR    – path to the certs/ directory
 #   CHART      - chart to deploy
 
-TAG=${TAG:-0.8.0}
+TAG=${TAG:-0.9.0}
 CERTDIR=${CERTDIR:-$(pwd)/certs}
 CHART=${CHART:-oci://ghcr.io/buoyantio/save-phippy-panopticon}
 
